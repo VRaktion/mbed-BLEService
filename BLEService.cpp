@@ -157,17 +157,6 @@ void BLEService::setQuatFloatVal(uint8_t id, float val0, float val1, float val2,
   this->writeToGatt(id, value, 16);
 }
 
-void BLEService::setQuintFloatVal(uint8_t id, float val0, float val1,
-                                  float val2, float val3, float val4) {
-  uint8_t value[20];
-  memcpy(value, (uint8_t *)&val0, 4);
-  memcpy(value + 4, (uint8_t *)&val1, 4);
-  memcpy(value + 8, (uint8_t *)&val2, 4);
-  memcpy(value + 12, (uint8_t *)&val3, 4);
-  memcpy(value + 16, (uint8_t *)&val4, 4);
-  this->writeToGatt(id, value, 20);
-}
-
 void BLEService::setTrippleShortVal(uint8_t id, int16_t val0, int16_t val1,
                                     int16_t val2) {
   uint8_t value[6];

@@ -43,10 +43,8 @@ public:
   void setFloatVal(uint8_t id, float val);
   void setQuatFloatVal(uint8_t id, float val0, float val1, float val2,
                        float val3);
-  void setQuintFloatVal(uint8_t id, float val0, float val1, float val2,
-                        float val3, float val4);
 
-      uint8_t getCharVal(uint8_t id);
+  uint8_t getCharVal(uint8_t id);
   uint32_t getIntVal(uint8_t id);
 
   void writeToGatt(uint8_t id, uint8_t *value, uint16_t length);
