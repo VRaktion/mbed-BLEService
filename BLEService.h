@@ -3,13 +3,19 @@
 
 #include "ble/BLE.h"
 #include "ble/Gap.h"
-// #include "BLEChar.h"
+#include "StateChain.h"
 #include "FunctionPointerWithContext.h"
 #include "mbed.h"
 
-class BLEService {
+class BLEService
+{
 public:
-  BLEService(const char *_uuid, uint8_t _charCount);
+  BLEService(
+      char *name,
+      UUID *uuid,
+      uint8_t _charCount,
+      EventQueue *p_eq,
+      StateChain *p_stateChain);
 
   const UUID *gattServiceUUID;
   GattService *gattService;
@@ -52,12 +58,32 @@ public:
 
   GattAttribute::Handle_t getValueHandle(uint8_t index);
 
+  char *getName();
+
+  void onStateChange(StateChain::States state);
+  void setState(StateChain::States state);
+
+protected:
+  Event<void(StateChain::States)> onStateChangeEvent;
+  StateChain::States state = StateChain::States::Undefined;
+
 private:
   //   Callback<void(void)> *readCb;
   Callback<void(void)> **writeCb;
   Callback<void(bool)> **registerNotifyCb;
+
+  void registerOnStateChain();
+
+  virtual void onStateOn();
+  virtual void onStateOff();
+  virtual void onStateStandby();
+
+  StateChain *stateChain;
+
   uint8_t charCount;
   uint8_t *notifyRegistrations;
+  EventQueue *eq;
+  char *name;
 };
 
 #endif

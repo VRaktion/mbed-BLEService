@@ -1,12 +1,21 @@
 #include "BLEService.h"
 
-BLEService::BLEService(const char *_uuid, uint8_t _charCount)
-    : charCount(_charCount), gattServiceUUID(new UUID(_uuid))
-// ,gattCharacteristics(new GattCharacteristic *[_charCount]),
-// readCb(new Callback<void(void)>[_charCount]),
-// writeCb(new Callback<void(void)>[_charCount])
+BLEService::BLEService(
+    char *name,
+    UUID *uuid,
+    uint8_t _charCount,
+    EventQueue *p_eq,
+    StateChain *p_stateChain)
+    : onStateChangeEvent(
+          p_eq->event(
+              callback(this, &BLEService::onStateChange))),
+      name(name),
+      charCount(_charCount),
+      gattServiceUUID(uuid),
+      eq(p_eq),
+      stateChain(p_stateChain)
 {
-  gattCharacteristics =
+  this->gattCharacteristics =
       (GattCharacteristic **)malloc(_charCount * sizeof(GattCharacteristic *));
   //   readCb =
   //       (Callback<void(void)> *)calloc(_charCount,
@@ -16,18 +25,72 @@ BLEService::BLEService(const char *_uuid, uint8_t _charCount)
   this->registerNotifyCb = (Callback<void(bool)> **)calloc(
       _charCount, sizeof(Callback<void(bool)> *));
   this->notifyRegistrations = (uint8_t *)calloc(_charCount, sizeof(uint8_t));
+  this->registerOnStateChain();
 }
 
-uint8_t BLEService::getCharacteristcsCount() { return this->charCount; }
+void BLEService::onStateChange(StateChain::States state)
+{
+  this->state = state;
+  // printf("[%s] switch state ", this->name);
+  switch (this->state)
+  {
+  case StateChain::States::Off:
+    this->onStateOff();
+    break;
+  case StateChain::States::Standby:
+    this->onStateStandby();
+    break;
+  case StateChain::States::On:
+    this->onStateOn();
+    break;
+  }
+}
 
-void BLEService::addCustomGattService() {
+void BLEService::setState(StateChain::States state)
+{
+  if (this->state != state)
+  {
+    this->stateChain->call(state);
+  }
+}
+
+void BLEService::onStateOn()
+{
+}
+
+void BLEService::onStateOff()
+{
+}
+
+void BLEService::onStateStandby()
+{
+}
+
+void BLEService::registerOnStateChain()
+{
+  ;
+  this->stateChain->add(&this->onStateChangeEvent);
+}
+
+char *BLEService::getName()
+{
+  return this->name;
+}
+
+uint8_t BLEService::getCharacteristcsCount()
+{
+  return this->charCount;
+}
+
+void BLEService::addCustomGattService()
+{
   BLE &ble = BLE::Instance();
   ble.gattServer().addService(*this->gattService);
 }
 
 void BLEService::initCharacteristic(uint8_t id, const UUID &uuid,
-                                    uint8_t properties, uint16_t size) {
-
+                                    uint8_t properties, uint16_t size)
+{
   //   uint8_t *zero = (uint8_t *)calloc(size, sizeof(uint8_t));
   this->gattCharacteristics[id] = new GattCharacteristic(
       uuid, NULL, size, size,
@@ -38,18 +101,23 @@ void BLEService::initCharacteristic(uint8_t id, const UUID &uuid,
   //   free(zero);
 }
 
-void BLEService::initService() {
+void BLEService::initService()
+{
   this->gattService =
       new GattService(*this->gattServiceUUID, this->gattCharacteristics,
                       (unsigned)this->charCount);
 }
 
-bool BLEService::checkWriteAccess(const GattWriteCallbackParams *params) {
-  for (uint8_t i = 0; i < charCount; i++) {
+bool BLEService::checkWriteAccess(const GattWriteCallbackParams *params)
+{
+  for (uint8_t i = 0; i < this->charCount; i++)
+  {
     if (this->writeCb[i] &&
-        params->handle == this->gattCharacteristics[i]->getValueHandle()) {
+        params->handle == this->gattCharacteristics[i]->getValueHandle())
+    {
       // && !this->gattCharacteristics[i]->isWriteAuthorizationEnabled()
-      this->writeCb[i]->call();
+      // this->writeCb[i]->call();
+      this->eq->call(*this->writeCb[i]);
       return true; // skipp later entries
     }
   }
@@ -57,20 +125,28 @@ bool BLEService::checkWriteAccess(const GattWriteCallbackParams *params) {
 }
 
 bool BLEService::checkNotifyRegistrations(GattAttribute::Handle_t handle,
-                                          bool enable) {
-  for (uint8_t i = 0; i < charCount; i++) {
+                                          bool enable)
+{
+  for (uint8_t i = 0; i < this->charCount; i++)
+  {
     if (this->registerNotifyCb[i] &&
         handle == this->gattCharacteristics[i]->getValueHandle() +
-                      1) { // notification handle is valueHandle+1
-      if (enable) {
+                      1)
+    { // notification handle is valueHandle+1
+      if (enable)
+      {
         this->notifyRegistrations[i]++;
-        if (this->notifyRegistrations[i] == 1) {
-          this->registerNotifyCb[i]->call(enable);
+        if (this->notifyRegistrations[i] == 1)
+        {
+          this->eq->call(*this->registerNotifyCb[i], enable);
         }
-      } else {
+      }
+      else
+      {
         this->notifyRegistrations[i]--;
-        if (this->notifyRegistrations[i] == 0) {
-          this->registerNotifyCb[i]->call(enable);
+        if (this->notifyRegistrations[i] == 0)
+        {
+          this->eq->call(*this->registerNotifyCb[i], enable);
         }
       }
       return true; // skipp later entries
@@ -79,7 +155,8 @@ bool BLEService::checkNotifyRegistrations(GattAttribute::Handle_t handle,
   return false;
 }
 
-GattAttribute::Handle_t BLEService::getValueHandle(uint8_t index) {
+GattAttribute::Handle_t BLEService::getValueHandle(uint8_t index)
+{
   return this->gattCharacteristics[index]->getValueHandle();
 }
 
@@ -88,12 +165,14 @@ GattAttribute::Handle_t BLEService::getValueHandle(uint8_t index) {
 //          sizeof(cbFct)); // because cbFct gets deleted after function quits
 // }
 
-void BLEService::setWriteCallback(uint8_t id, Callback<void(void)> *cbFct) {
+void BLEService::setWriteCallback(uint8_t id, Callback<void(void)> *cbFct)
+{
   this->writeCb[id] = cbFct;
 }
 
 void BLEService::setNotifyRegisterCallback(uint8_t id,
-                                           Callback<void(bool)> *cbFct) {
+                                           Callback<void(bool)> *cbFct)
+{
   this->registerNotifyCb[id] = cbFct;
 }
 
@@ -111,14 +190,16 @@ void BLEService::setNotifyRegisterCallback(uint8_t id,
 //   member);
 // }
 
-void BLEService::writeToGatt(uint8_t id, uint8_t *value, uint16_t length) {
+void BLEService::writeToGatt(uint8_t id, uint8_t *value, uint16_t length)
+{
   BLE &ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
   ble_error_t err =
       ble.gattServer().write(this->gattCharacteristics[id]->getValueHandle(),
                              value, length); // true... localOnly
 }
 
-void BLEService::readFromGatt(uint8_t id, uint8_t *value, uint16_t length) {
+void BLEService::readFromGatt(uint8_t id, uint8_t *value, uint16_t length)
+{
   BLE &ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
   ble_error_t err =
       ble.gattServer().read(this->gattCharacteristics[id]->getValueHandle(),
@@ -130,7 +211,8 @@ void BLEService::readFromGatt(uint8_t id, uint8_t *value, uint16_t length) {
 //     if (this->readCb[i] &&
 //         params->handle == this->gattCharacteristics[i]->getValueHandle()) {
 //       // && !this->gattCharacteristics[i]->isReadAuthorizationEnabled()
-//       this->readCb[i].call();
+// this->eq->call(this->readCb[i]);
+//       //this->readCb[i].call();
 //       return true;
 //     }
 //   }
@@ -139,16 +221,19 @@ void BLEService::readFromGatt(uint8_t id, uint8_t *value, uint16_t length) {
 
 // BLEChar
 
-void BLEService::setIntVal(uint8_t id, int32_t val) {
+void BLEService::setIntVal(uint8_t id, int32_t val)
+{
   this->writeToGatt(id, (uint8_t *)&val, 4);
 }
 
-void BLEService::setFloatVal(uint8_t id, float val) {
+void BLEService::setFloatVal(uint8_t id, float val)
+{
   this->writeToGatt(id, (uint8_t *)&val, 4);
 }
 
 void BLEService::setQuatFloatVal(uint8_t id, float val0, float val1, float val2,
-                                 float val3) {
+                                 float val3)
+{
   uint8_t value[16];
   memcpy(value, (uint8_t *)&val0, 4);
   memcpy(value + 4, (uint8_t *)&val1, 4);
@@ -158,7 +243,8 @@ void BLEService::setQuatFloatVal(uint8_t id, float val0, float val1, float val2,
 }
 
 void BLEService::setTrippleShortVal(uint8_t id, int16_t val0, int16_t val1,
-                                    int16_t val2) {
+                                    int16_t val2)
+{
   uint8_t value[6];
   memcpy(value, (uint8_t *)&val0, 2);
   memcpy(value + 2, (uint8_t *)&val1, 2);
@@ -167,7 +253,8 @@ void BLEService::setTrippleShortVal(uint8_t id, int16_t val0, int16_t val1,
 }
 
 void BLEService::setQuatShortVal(uint8_t id, int16_t val0, int16_t val1,
-                                 int16_t val2, int16_t val3) {
+                                 int16_t val2, int16_t val3)
+{
   uint8_t value[8];
   memcpy(value, (uint8_t *)&val0, 2);
   memcpy(value + 2, (uint8_t *)&val1, 2);
@@ -176,21 +263,25 @@ void BLEService::setQuatShortVal(uint8_t id, int16_t val0, int16_t val1,
   this->writeToGatt(id, value, 8);
 }
 
-void BLEService::setShortVal(uint8_t id, int16_t val) {
+void BLEService::setShortVal(uint8_t id, int16_t val)
+{
   this->writeToGatt(id, (uint8_t *)&val, 2);
 }
 
-void BLEService::setCharVal(uint8_t id, uint8_t val) {
+void BLEService::setCharVal(uint8_t id, uint8_t val)
+{
   this->writeToGatt(id, (uint8_t *)&val, 1);
 }
 
-uint8_t BLEService::getCharVal(uint8_t id) {
+uint8_t BLEService::getCharVal(uint8_t id)
+{
   uint8_t value;
   this->readFromGatt(id, &value, 1);
   return value;
 }
 
-uint32_t BLEService::getIntVal(uint8_t id) {
+uint32_t BLEService::getIntVal(uint8_t id)
+{
   uint32_t value;
   this->readFromGatt(id, (uint8_t *)&value, 4);
   return value;
