@@ -28,6 +28,8 @@ BLEService::BLEService(
   this->registerOnStateChain();
 }
 
+
+
 void BLEService::onStateChange(StateChain::States state)
 {
   this->state = state;
@@ -54,18 +56,6 @@ void BLEService::setState(StateChain::States state)
   }
 }
 
-void BLEService::onStateOn()
-{
-}
-
-void BLEService::onStateOff()
-{
-}
-
-void BLEService::onStateStandby()
-{
-}
-
 void BLEService::registerOnStateChain()
 {
   ;
@@ -82,11 +72,15 @@ uint8_t BLEService::getCharacteristcsCount()
   return this->charCount;
 }
 
-void BLEService::addCustomGattService()
-{
-  BLE &ble = BLE::Instance();
-  ble.gattServer().addService(*this->gattService);
+GattService* BLEService::getGattService(){
+  return this->gattService;
 }
+
+// void BLEService::addCustomGattService()
+// {
+//   BLE &ble = BLE::Instance();
+//   ble.gattServer().addService(*this->gattService);
+// }
 
 void BLEService::initCharacteristic(uint8_t id, const UUID &uuid,
                                     uint8_t properties, uint16_t size)

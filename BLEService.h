@@ -21,7 +21,10 @@ public:
   GattService *gattService;
   GattCharacteristic **gattCharacteristics;
 
-  void addCustomGattService();
+  virtual void init() = 0;
+  virtual void pastBleInit() = 0;
+
+  GattService* getGattService();
   void initService();
   uint8_t getCharacteristcsCount();
 
@@ -74,9 +77,9 @@ private:
 
   void registerOnStateChain();
 
-  virtual void onStateOn();
-  virtual void onStateOff();
-  virtual void onStateStandby();
+  virtual void onStateOn() = 0;
+  virtual void onStateOff() = 0;
+  virtual void onStateStandby() = 0;
 
   StateChain *stateChain;
 
