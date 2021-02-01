@@ -23,6 +23,7 @@ public:
 
   virtual void init() = 0;
   virtual void pastBleInit() = 0;
+  virtual void initCharacteristics() = 0;
 
   GattService* getGattService();
   void initService();
