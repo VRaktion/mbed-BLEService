@@ -4,6 +4,7 @@
 #include "ble/BLE.h"
 #include "ble/Gap.h"
 #include "StateChain.h"
+#include "BLECharacteristicChain.h"
 #include "FunctionPointerWithContext.h"
 #include "mbed.h"
 
@@ -13,7 +14,6 @@ public:
   BLEService(
       char *name,
       UUID *uuid,
-      uint8_t _charCount,
       EventQueue *p_eq,
       StateChain *p_stateChain);
 
@@ -29,38 +29,31 @@ public:
   void initService();
   uint8_t getCharacteristcsCount();
 
-  void initCharacteristic(uint8_t id, const UUID &uuid, uint8_t properties,
-                          uint16_t size);
+  void addCharacteristic(BLECharacteristic* characteristic);
 
   bool checkWriteAccess(const GattWriteCallbackParams *params);
   bool checkReadAccess(const GattReadCallbackParams *params);
   bool checkNotifyRegistrations(GattAttribute::Handle_t handle, bool enable);
 
-  void setReadCallback(uint8_t id, Callback<void(void)> cbFct);
-  // void setReadAuthCallback(uint8_t id, T *object,
-  // void(T::*member)(GattReadAuthCallbackParams *));
-  void setWriteCallback(uint8_t id, Callback<void(void)> *cbFct);
-  void setNotifyRegisterCallback(uint8_t id, Callback<void(bool)> *cbFct);
-  // void setWriteAuthCallback(uint8_t id, T *object,
-  // void(T::*member)(GattWriteAuthCallbackParams *));
+  void setReadCallback(uint16_t uuid, Callback<void(void)> cbFct);
+  void setWriteCallback(uint16_t uuid, Callback<void(void)> *cbFct);
+  void setNotifyRegisterCallback(uint16_t uuid, Callback<void(bool)> *cbFct);
 
-  void setCharVal(uint8_t id, uint8_t val);
-  void setShortVal(uint8_t id, int16_t val);
-  void setTrippleShortVal(uint8_t id, int16_t val0, int16_t val1, int16_t val2);
-  void setQuatShortVal(uint8_t id, int16_t val0, int16_t val1, int16_t val2,
+  void setCharVal(uint16_t uuid, uint8_t val);
+  void setShortVal(uint16_t uuid, int16_t val);
+  void setTrippleShortVal(uint16_t uuid, int16_t val0, int16_t val1, int16_t val2);
+  void setQuatShortVal(uint16_t uuid, int16_t val0, int16_t val1, int16_t val2,
                        int16_t val3);
-  void setIntVal(uint8_t id, int32_t val);
-  void setFloatVal(uint8_t id, float val);
-  void setQuatFloatVal(uint8_t id, float val0, float val1, float val2,
+  void setIntVal(uint16_t uuid, int32_t val);
+  void setFloatVal(uint16_t uuid, float val);
+  void setQuatFloatVal(uint16_t uuid, float val0, float val1, float val2,
                        float val3);
 
-  uint8_t getCharVal(uint8_t id);
-  uint32_t getIntVal(uint8_t id);
+  uint8_t getCharVal(uint16_t uuid);
+  uint32_t getIntVal(uint16_t uuid);
 
-  void writeToGatt(uint8_t id, uint8_t *value, uint16_t length);
-  void readFromGatt(uint8_t id, uint8_t *value, uint16_t length);
-
-  GattAttribute::Handle_t getValueHandle(uint8_t index);
+  void writeToGatt(uint16_t uuid, uint8_t *value, uint16_t length);
+  void readFromGatt(uint16_t uuid, uint8_t *value, uint16_t length);
 
   char *getName();
 
@@ -73,8 +66,8 @@ protected:
 
 private:
   //   Callback<void(void)> *readCb;
-  Callback<void(void)> **writeCb;
-  Callback<void(bool)> **registerNotifyCb;
+  // Callback<void(void)> **writeCb;
+  // Callback<void(bool)> **registerNotifyCb;
 
   void registerOnStateChain();
 
@@ -84,8 +77,10 @@ private:
 
   StateChain *stateChain;
 
-  uint8_t charCount;
-  uint8_t *notifyRegistrations;
+  BLECharacteristicChain *charChain;
+  uint8_t charCount{0};
+
+  // uint8_t *notifyRegistrations;
   EventQueue *eq;
   char *name;
 };
