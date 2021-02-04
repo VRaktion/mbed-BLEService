@@ -122,6 +122,17 @@ void BLEService::setIntVal(uint16_t uuid, int32_t val)
   this->writeToGatt(uuid, (uint8_t *)&val, 4);
 }
 
+void BLEService::setQuatIntVal(uint16_t uuid, int val0, int val1, int val2,
+                      int val3)
+{
+  uint8_t value[16];
+  memcpy(value, (uint8_t *)&val0, 4);
+  memcpy(value + 4, (uint8_t *)&val1, 4);
+  memcpy(value + 8, (uint8_t *)&val2, 4);
+  memcpy(value + 12, (uint8_t *)&val3, 4);
+  this->writeToGatt(uuid, value, 16);   
+}
+
 void BLEService::setFloatVal(uint16_t uuid, float val)
 {
   this->writeToGatt(uuid, (uint8_t *)&val, 4);

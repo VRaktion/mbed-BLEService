@@ -50,6 +50,8 @@ public:
   void setTrippleFloatVal(uint16_t uuid, float val0, float val1, float val2);
   void setQuatFloatVal(uint16_t uuid, float val0, float val1, float val2,
                        float val3);
+  void setQuatIntVal(uint16_t uuid, int val0, int val1, int val2,
+                        int val3);
 
   uint8_t getCharVal(uint16_t uuid);
   uint32_t getIntVal(uint16_t uuid);
