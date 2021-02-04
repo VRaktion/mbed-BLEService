@@ -22,7 +22,6 @@ private:
     Callback<void(void)> *writeCb{nullptr};
     Callback<void(bool)> *registerNotifyCb{nullptr};
     uint8_t notifyRegistrations{0};
-    
 };
 
 #endif//BLE_CHARACTERISTIC_H

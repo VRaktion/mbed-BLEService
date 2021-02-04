@@ -46,6 +46,7 @@ public:
                        int16_t val3);
   void setIntVal(uint16_t uuid, int32_t val);
   void setFloatVal(uint16_t uuid, float val);
+  void setTrippleFloatVal(uint16_t uuid, float val0, float val1, float val2);
   void setQuatFloatVal(uint16_t uuid, float val0, float val1, float val2,
                        float val3);
 
