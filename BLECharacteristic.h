@@ -17,6 +17,7 @@ public:
 
     void setWriteCallback(Callback<void(void)> *cbFct);
     void setNotifyRegisterCallback(Callback<void(bool)> *cbFct);
+    virtual void resetNotifyRegistrations();
 private:
 //   Callback<void(void)> *readCb;
     Callback<void(void)> *writeCb{nullptr};

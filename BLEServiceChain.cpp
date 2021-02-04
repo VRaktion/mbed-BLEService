@@ -50,6 +50,16 @@ void BLEServiceChain::checkNotifyRegistrations(GattAttribute::Handle_t handle, b
     } 
 }
 
+void BLEServiceChain::resetNotifyRegistrations(){
+    if(this->service == nullptr) return;
+    //Todo check for notifiable chars first
+    this->service->resetNotifyRegistrations();
+    if (this->next != nullptr)
+    {
+        this->next->resetNotifyRegistrations();
+    } 
+}
+
 void BLEServiceChain::init(){
     if(this->service == nullptr) return;
     this->service->init();

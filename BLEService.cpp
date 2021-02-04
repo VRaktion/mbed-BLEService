@@ -83,15 +83,13 @@ void BLEService::initService()
 
 bool BLEService::checkWriteAccess(const GattWriteCallbackParams *params)
 {
-  this->charChain->checkWriteAccess(params);
-  return true;
+  return this->charChain->checkWriteAccess(params);
 }
 
 bool BLEService::checkNotifyRegistrations(GattAttribute::Handle_t handle,
                                           bool enable)
 {
-  this->charChain->checkNotifyRegistrations(handle, enable);
-  return true;
+  return this->charChain->checkNotifyRegistrations(handle, enable);
 }
 
 void BLEService::setWriteCallback(uint16_t uuid, Callback<void(void)> *cbFct)
@@ -103,6 +101,10 @@ void BLEService::setNotifyRegisterCallback(uint16_t uuid,
                                            Callback<void(bool)> *cbFct)
 {
   this->charChain->setNotifyRegisterCallback(uuid, cbFct);
+}
+
+void BLEService::resetNotifyRegistrations(){
+  this->charChain->resetNotifyRegistrations();
 }
 
 void BLEService::writeToGatt(uint16_t uuid, uint8_t *value, uint16_t length)

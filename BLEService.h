@@ -38,6 +38,7 @@ public:
   void setReadCallback(uint16_t uuid, Callback<void(void)> cbFct);
   void setWriteCallback(uint16_t uuid, Callback<void(void)> *cbFct);
   void setNotifyRegisterCallback(uint16_t uuid, Callback<void(bool)> *cbFct);
+  void resetNotifyRegistrations();
 
   void setCharVal(uint16_t uuid, uint8_t val);
   void setShortVal(uint16_t uuid, int16_t val);

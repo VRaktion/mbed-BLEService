@@ -15,9 +15,9 @@ public:
     BLECharacteristicChain(BLECharacteristic* bleCharacteristic);
 
     void add(BLECharacteristic* bleCharacteristic);
-    void checkWriteAccess(const GattWriteCallbackParams *params);
-    // void checkReadAccess(const GattReadCallbackParams *params);
-    void checkNotifyRegistrations(GattAttribute::Handle_t handle, bool enable);
+    bool checkWriteAccess(const GattWriteCallbackParams *params);
+    // bool checkReadAccess(const GattReadCallbackParams *params);
+    bool checkNotifyRegistrations(GattAttribute::Handle_t handle, bool enable);
 
     void setWriteCallback(uint16_t uuid, Callback<void(void)> *cbFct);
     void setNotifyRegisterCallback(uint16_t uuid, Callback<void(bool)> *cbFct);
@@ -26,6 +26,8 @@ public:
     void readFromGatt(int16_t uuid, uint8_t *value, uint16_t length);
 
     void fillCharArray(GattCharacteristic **charArray);
+
+    void resetNotifyRegistrations();
 
 private:
     BLECharacteristic* bleCharacteristic{nullptr};

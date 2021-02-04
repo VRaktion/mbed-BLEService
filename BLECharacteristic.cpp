@@ -27,6 +27,10 @@ void BLECharacteristic::setNotify(bool enable)
     }
 }
 
+void BLECharacteristic::resetNotifyRegistrations(){
+    this->notifyRegistrations = 0;
+}
+
 void BLECharacteristic::dataWritten()
 {
     if (this->writeCb)

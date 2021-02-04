@@ -20,6 +20,7 @@ public:
     void init();
     void pastBleInit();
     void initCustomGattServices();
+    void resetNotifyRegistrations();
 
 private:
 

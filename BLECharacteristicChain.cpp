@@ -23,16 +23,18 @@ void BLECharacteristicChain::add(BLECharacteristic* bleCharacteristic){
     }
 }
 
-void BLECharacteristicChain::checkWriteAccess(const GattWriteCallbackParams *params){
+bool BLECharacteristicChain::checkWriteAccess(const GattWriteCallbackParams *params){
     if(this->bleCharacteristic == nullptr){
-        return;
+        return false;
     }
 
     if (params->handle == this->bleCharacteristic->getValueHandle()) {
         this->bleCharacteristic->dataWritten();
-        return;
+        return true;
     }else if (this->next != nullptr){
-        this->next->checkWriteAccess(params);
+        return this->next->checkWriteAccess(params);
+    }else{
+        return false;
     }
 }
 
@@ -40,19 +42,20 @@ void BLECharacteristicChain::checkWriteAccess(const GattWriteCallbackParams *par
 
 // }
 
-void BLECharacteristicChain::checkNotifyRegistrations(GattAttribute::Handle_t handle, bool enable){
-
+bool BLECharacteristicChain::checkNotifyRegistrations(GattAttribute::Handle_t handle, bool enable){
     if(this->bleCharacteristic == nullptr){
-        return;
+        return false;
     }
 
     if (handle == this->bleCharacteristic->getValueHandle() 
                       + 1)// notification handle is valueHandle+1
     { 
         this->bleCharacteristic->setNotify(enable);
-        return; // skipp later entries
+        return true; // skipp later entries
     }else if (this->next != nullptr){
-        this->next->checkNotifyRegistrations(handle, enable);
+        return this->next->checkNotifyRegistrations(handle, enable);
+    }else{
+        return false;
     }
 }
 
@@ -70,8 +73,9 @@ void BLECharacteristicChain::writeToGatt(uint16_t uuid, uint8_t *value, uint16_t
         return; // skipp later entries
     }else if (this->next != nullptr){
         this->next->writeToGatt(uuid, value, length);
+    }else{
+        return;
     }
-
 }
 
 void BLECharacteristicChain::readFromGatt(int16_t uuid, uint8_t *value, uint16_t length)
@@ -89,6 +93,8 @@ void BLECharacteristicChain::readFromGatt(int16_t uuid, uint8_t *value, uint16_t
         return; // skipp later entries
     }else if (this->next != nullptr){
         this->next->readFromGatt(uuid, value, length);
+    }else{
+        return;
     }
 
 }
@@ -105,6 +111,8 @@ void BLECharacteristicChain::setWriteCallback(uint16_t uuid, Callback<void(void)
         return; // skipp later entries
     }else if (this->next != nullptr){
         this->next->setWriteCallback(uuid, cbFct);
+    }else{
+        return;
     }
 }
 
@@ -121,6 +129,8 @@ void BLECharacteristicChain::setNotifyRegisterCallback(uint16_t uuid,
         return; // skipp later entries
     }else if (this->next != nullptr){
         this->next->setNotifyRegisterCallback(uuid, cbFct);
+    }else{
+        return;
     }
 }
 
@@ -129,8 +139,17 @@ void BLECharacteristicChain::fillCharArray(GattCharacteristic **charArray){
         return;
     }
     *charArray = this->bleCharacteristic;
-    if(this->next == nullptr){
+    if(this->next != nullptr){
+        this->next->fillCharArray(charArray++);
+    }
+}
+
+void BLECharacteristicChain::resetNotifyRegistrations(){
+    if(this->bleCharacteristic == nullptr){
         return;
     }
-    this->next->fillCharArray(charArray++);
+    this->bleCharacteristic->resetNotifyRegistrations();
+    if (this->next != nullptr){
+        this->next->resetNotifyRegistrations();
+    }
 }

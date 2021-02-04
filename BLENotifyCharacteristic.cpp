@@ -41,3 +41,8 @@ void BLENotifyCharacteristic::notifyRegisterNotifyCb(bool enable){
         this->intervalEvent->stop();
     }
 }
+
+void BLENotifyCharacteristic::resetNotifyRegistrations(){
+    BLECharacteristic::resetNotifyRegistrations();
+    this->intervalEvent->stop();
+}

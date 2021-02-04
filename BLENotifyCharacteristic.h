@@ -11,6 +11,7 @@ public:
     BLENotifyCharacteristic(const UUID &uuid, uint16_t size, EventQueue *eq, int interval, Callback<void(void)> intervalCb);
     void notifyWriteCb();
     void notifyRegisterNotifyCb(bool enable);
+    void resetNotifyRegistrations();
 private:
     IntervalEvent *intervalEvent;
 };
