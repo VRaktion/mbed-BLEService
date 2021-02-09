@@ -140,7 +140,7 @@ void BLECharacteristicChain::fillCharArray(GattCharacteristic **charArray){
     }
     *charArray = this->bleCharacteristic;
     if(this->next != nullptr){
-        this->next->fillCharArray(charArray++);
+        this->next->fillCharArray(++charArray);
     }
 }
 

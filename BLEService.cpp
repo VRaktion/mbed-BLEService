@@ -86,6 +86,11 @@ bool BLEService::checkWriteAccess(const GattWriteCallbackParams *params)
   return this->charChain->checkWriteAccess(params);
 }
 
+bool BLEService::checkReadAccess(const GattReadCallbackParams *params){
+    // return this->charChain->checkReadAccess(params);
+    return false;
+}
+
 bool BLEService::checkNotifyRegistrations(GattAttribute::Handle_t handle,
                                           bool enable)
 {
@@ -157,6 +162,11 @@ void BLEService::setQuatFloatVal(uint16_t uuid, float val0, float val1, float va
   this->writeToGatt(uuid, value, 16);
 }
 
+void BLEService::setQuintFloatVal(uint16_t uuid, float val0, float val1, 
+  float val2, float val3, float val4){
+
+}
+
 void BLEService::setTrippleShortVal(uint16_t uuid, int16_t val0, int16_t val1,
                                     int16_t val2)
 {
@@ -176,6 +186,18 @@ void BLEService::setQuatShortVal(uint16_t uuid, int16_t val0, int16_t val1,
   memcpy(value + 4, (uint8_t *)&val2, 2);
   memcpy(value + 6, (uint8_t *)&val3, 2);
   this->writeToGatt(uuid, value, 8);
+}
+
+void BLEService::setGatt(uint16_t uuid, char* values, int length){
+  this->writeToGatt(uuid, (uint8_t *) values, length * sizeof(char));
+}
+
+void BLEService::setGatt(uint16_t uuid, int* values, int length){
+  this->writeToGatt(uuid, (uint8_t *) values, length * sizeof(int));
+}
+
+void BLEService::setGatt(uint16_t uuid, float* values, int length){
+  this->writeToGatt(uuid, (uint8_t *) values, length * sizeof(float));
 }
 
 void BLEService::setShortVal(uint16_t uuid, int16_t val)

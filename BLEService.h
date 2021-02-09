@@ -53,8 +53,15 @@ public:
   void setQuatIntVal(uint16_t uuid, int val0, int val1, int val2,
                         int val3);
 
+  void setQuintFloatVal(uint16_t uuid, float val0, float val1, float val2,
+                       float val3, float val4);
+
   uint8_t getCharVal(uint16_t uuid);
   uint32_t getIntVal(uint16_t uuid);
+
+  void setGatt(uint16_t uuid, char* values, int length);
+  void setGatt(uint16_t uuid, int* values, int length);
+  void setGatt(uint16_t uuid, float* values, int length);
 
   void writeToGatt(uint16_t uuid, uint8_t *value, uint16_t length);
   void readFromGatt(uint16_t uuid, uint8_t *value, uint16_t length);
