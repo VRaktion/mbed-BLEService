@@ -17,6 +17,10 @@ public:
 
     void setWriteCallback(Callback<void(void)> *cbFct);
     void setNotifyRegisterCallback(Callback<void(bool)> *cbFct);
+
+    ble_error_t readGatt(uint8_t* buffer, uint16_t length);
+    ble_error_t writeGatt(uint8_t* buffer, uint16_t length);
+
     virtual void resetNotifyRegistrations();
 private:
 //   Callback<void(void)> *readCb;

@@ -25,11 +25,9 @@ intervalEvent(new IntervalEvent(eq, interval, intervalCb))
 }
 
 void BLENotifyCharacteristic::notifyWriteCb(){
-    BLE &ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
     uint32_t value;
     uint16_t length{4};
-    ble_error_t err = ble.gattServer().read(
-            this->getValueHandle(), (uint8_t *)&value, &length);
+    this->readGatt((uint8_t *)&value, sizeof(int));
     printf("new interval value: %d\r\n", value);
     this->intervalEvent->setInterval(value);
 }

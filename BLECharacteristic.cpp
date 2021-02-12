@@ -53,3 +53,15 @@ void BLECharacteristic::setNotifyRegisterCallback(Callback<void(bool)> *cbFct)
 {
     this->registerNotifyCb = cbFct;
 }
+
+ble_error_t BLECharacteristic::readGatt(uint8_t* buffer, uint16_t length){
+    BLE &ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
+    return ble.gattServer().read(
+        this->getValueHandle(), buffer, &length);
+}
+
+ble_error_t BLECharacteristic::writeGatt(uint8_t* buffer, uint16_t length){
+    BLE &ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
+    return ble.gattServer().write(
+        this->getValueHandle(), buffer, length);
+}
